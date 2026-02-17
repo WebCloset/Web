@@ -1,0 +1,41 @@
+:root {
+  /* Primary Colors */
+  --color-primary: #a5ac79;
+  --color-primary-dark: #7f8560;
+  --color-primary-light: #8fc079;
+
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-black: #1a1a1a;
+  --color-gray-dark: #2a2a2a;
+  --color-gray-medium: #3a3a3a;
+  --color-gray: #4a4a4a;
+  --color-gray-light: #d0d0d0;
+  --color-gray-lighter: #e0e0e0;
+  --color-gray-lightest: #f5f5f5;
+  --color-gray-text: #666;
+  --color-gray-text-light: #999;
+
+  /* Product Background Colors */
+  --color-product-purple: #9b7fb8;
+  --color-product-green: #7fb069;
+  --color-product-gray: #f5f5f5;
+
+  /* Text Colors */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666;
+  --color-text-light: #999;
+  --color-text-white: #ffffff;
+  --color-text-footer: #e0e0e0;
+
+  /* Border Colors */
+  --color-border: #e0e0e0;
+  --color-border-light: #d0d0d0;
+
+  /* Olive Green Colors for Product Hover */
+  --color-olive-dark: #556B2F;
+  --color-olive-light: #9FAF7E;
+}
+
+
+

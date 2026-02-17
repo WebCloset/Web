@@ -1,0 +1,67 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header-hero-wrapper {
+  position: relative;
+}
+
+.header-hero-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.header-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Soft, brushed-like blend using multiple radial gradients */
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(224, 227, 205, 0.688),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 255, 255, 0.6),
+      transparent 65%
+    ),
+    radial-gradient(
+      circle at 40% 80%,
+      rgba(165, 172, 121, 0.25),
+      transparent 70%
+    ),
+    linear-gradient(
+      135deg,
+      rgba(165, 172, 121, 0.18),
+      rgba(255, 255, 255, 0.55)
+    );
+  z-index: 1;
+}
+
+.header-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+main {
+  flex: 1;
+}
+
+
+

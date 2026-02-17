@@ -1,0 +1,147 @@
+@import "../styles/colors.css";
+
+.hero {
+  padding: 80px 40px;
+  text-align: center;
+}
+
+.hero-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 48px;
+  line-height: 1.2;
+  text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+}
+
+.hero-title2 {
+  color: var(--color-primary-dark);
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-gray-text);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 25px 60px;
+  font-size: 20px;
+  border: 2px solid var(--color-border);
+  border-radius: 80px;
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-light);
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.btn-search{
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 16px 34px;
+  border-radius: 100px;
+}
+.btn-lucky {
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 16px 64px;
+  border-radius: 100px;
+}
+
+.btn-search {
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+}
+
+.btn-search:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-lucky {
+  background-color: var(--color-black);
+  color: var(--color-text-white);
+}
+
+.btn-lucky:hover {
+  background-color: var(--color-gray-dark);
+  transform: translateY(-1px);
+}
+
+.hero-subtitle {
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding: 60px 24px;
+  }
+
+  .hero-title {
+    font-size: 32px;
+    margin-bottom: 32px;
+  }
+
+  .search-input {
+    padding: 16px 18px 16px 52px;
+    font-size: 14px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .btn-search,
+  .btn-lucky {
+    width: 100%;
+    padding: 12px 24px;
+  }
+}
