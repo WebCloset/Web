@@ -90,7 +90,7 @@ function Home() {
 
 function App() {
   return (
-    <Router basename="/webcloset">
+    <Router>
       <div className="app">
         <Routes>
           <Route path="/home" element={<Home />} />
