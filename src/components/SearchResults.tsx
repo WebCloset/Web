@@ -2,8 +2,18 @@ import { forwardRef, useMemo } from "react";
 import { Product } from "../types/api";
 import "./SearchResults.css";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
-import AdBanner from "./AdBanner";
-import { AD_CONFIG } from "../config/ads";
+import AdAdmin from "./AdAdmin";
+
+// Ad configuration - position IDs from AdAdmin
+const AD_CONFIG = {
+  ENABLED: true,
+  AD_INTERVAL: 4, // Show ad after every N products
+  FULL_ROW_AD_INTERVAL: 12, // Show full-row ad after every N products
+  POSITION_IDS: {
+    BETWEEN: 29, // Position ID for inline ads (between products)
+    FULLROW: 30, // Position ID for full-row ads
+  },
+};
 
 const FULL_ROW_INTERVAL = AD_CONFIG.FULL_ROW_AD_INTERVAL ?? 12;
 
@@ -97,7 +107,7 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
   }
 
   // Insert ads between products: inline (between) and full-row (lower frequency)
-  type GridItem = Product | { type: 'ad'; id: string; index: number; position: 'between' | 'fullrow' };
+  type GridItem = Product | { type: 'ad'; id: string; index: number; position: 'between' | 'fullrow'; positionId: number };
 
   const productsWithAds = useMemo(() => {
     if (!AD_CONFIG.ENABLED) {
@@ -123,6 +133,7 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
           id: `ad-fullrow-${fullrowCount}`,
           index: fullrowCount,
           position: 'fullrow',
+          positionId: AD_CONFIG.POSITION_IDS.FULLROW,
         });
       } else if (isBetweenSlot) {
         betweenCount += 1;
@@ -131,6 +142,7 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
           id: `ad-between-${betweenCount}`,
           index: betweenCount,
           position: 'between',
+          positionId: AD_CONFIG.POSITION_IDS.BETWEEN,
         });
       }
     });
@@ -148,14 +160,12 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
           )}
         </h2>
         <div className="products-grid">
-          {productsWithAds.map((item, ) => {
+          {productsWithAds.map((item) => {
             if ('type' in item && item.type === 'ad') {
               return (
-                <AdBanner
+                <AdAdmin
                   key={item.id}
-                  adSlot={`search-results-${item.position}-${item.index}`}
-                  adId={item.id}
-                  position={item.position}
+                  positionId={item.positionId}
                   fullRow={item.position === 'fullrow'}
                 />
               );

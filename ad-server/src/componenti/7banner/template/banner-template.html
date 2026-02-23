@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+ 	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+	<script>
+	  /*
+		------------------------------------------------------------
+		put here the clickTag to track clicks
+		------------------------------------------------------------
+	  */
+	  var bannerId = "##ID##";
+	  var clickTag = "##CLICKTAG##";
+	  var videoStartTag = "##VIDEOSTARTTAG##";
+	  var videoEndTag = "##VIDEOENDTAG##";
+	  var debugTag = "##DEBUGTAG##";
+
+	  var debug = false;
+				
+		/* 
+			------------------------------------------------------------
+			customize here names and dimensions
+			------------------------------------------------------------
+		*/
+			var Video = "##VIDEOFILE##";
+			var Poster = "##POSTERFILE##";
+			var aspectRatio = ##ASPECTRATIO##;
+			var audioToggle = ##AUDIOTOGGLE##;
+
+		// in get we have the id of the banner to handle multiple instances
+		// of video banners.
+		const urlParams = new URLSearchParams(window.location.search);
+		const iframeid = urlParams.get('id');
+		const referer = urlParams.get('ref');
+
+		let hasTrackedPlay = false;
+		let hasTrackedEndPlay = false;
+
+		// this function is called to adjust the size of the video
+		// given the new width
+		function adjust_video_by_width(w) {
+			if(debug) console.log("adjust_video_by_width", w);
+			var h = parseInt(w / aspectRatio);
+			var videoContainer = document.getElementById("container");
+			videoContainer.style.width = w + 'px';
+			videoContainer.style.height = h + 'px';
+			var video = document.getElementById("video");
+			video.style.width = w + 'px';
+			video.style.height = h + 'px';
+		} 
+
+		function debugLog(msg) {
+			if(!debug) return;
+			console.log(msg);
+			try {
+				track( debugTag + "?msg=" + encodeURIComponent(msg));
+			} catch (e) {}
+		}
+
+		function track(url) {
+			try {
+				if (navigator.sendBeacon) {
+					navigator.sendBeacon(url);
+				} else {
+					fetch(url, { method: "GET", keepalive: true });
+				}
+			} catch (e) {
+				console.warn("Track error:", e);
+			}
+		}
+
+		// on load (and on resize of the parent) this function is called
+		// to adjust the size of the video, the new height
+		// is sent to the parent to adjust the iframe size.
+		function adjust_video_height(){
+
+			var w = document.body.scrollWidth;
+			var h = parseInt(w / aspectRatio);
+
+			var videoContainer = document.getElementById("container");
+			
+
+			if(typeof(window.resdefined)=="undefined"){
+				if (videoContainer) {
+					videoContainer.innerHTML = `
+						<video id="video" autoplay muted playsinline poster="${Poster}" width="${w}" height="${h}">
+							<source src="${Video}" type="video/mp4">
+						</video>
+						<a href="${clickTag}" target="_blank"></a>
+						<button id="muteBtn" class="off"></button>
+					`;
+
+					const video = document.getElementById("video");
+					video.setAttribute("muted", "");
+					video.setAttribute("autoplay", "");
+					video.setAttribute("playsinline", "");
+					const muteBtn = document.getElementById("muteBtn");
+					if (!audioToggle) {
+						muteBtn.style.display = "none";
+					}
+			
+
+					// setInterval(() => {
+					// 	if (video && video.paused) {
+					// 		video.play().then(() => {
+					// 			debugLog("VIDEO PLAYED VIA POLLING");
+					// 		}).catch(() => {});
+					// 	}
+					// }, 1000); // ogni secondo
+
+						video.addEventListener("playing", () => {
+							debugLog("VIDEO PLAYING");
+							const playBtn = document.getElementById("playBtn");
+							if(playBtn) playBtn.remove();
+							if (!hasTrackedPlay) track( videoStartTag + "&ref=" + referer);
+							hasTrackedPlay = true;
+						});
+
+						video.addEventListener("ended", () => {
+							debugLog("VIDEO ENDED");
+							if (!hasTrackedEndPlay) track( videoEndTag + "&ref=" + referer);
+							hasTrackedEndPlay = true;
+							debug = false;
+							setTimeout(() => {
+								video.currentTime = 0;
+								video.play();
+							}, 10);
+						});
+
+						video.addEventListener("canplay", () => debugLog("VIDEO CANPLAY"));
+						video.addEventListener("loadeddata", () => debugLog("VIDEO LOADEDDATA"));
+						video.addEventListener("waiting", () => debugLog("VIDEO WAITING"));
+						video.addEventListener("error", (e) => {
+							debugLog("VIDEO ERROR");
+						});
+						video.addEventListener("pause", () => debugLog("VIDEO PAUSED"));			
+
+
+						setTimeout(() => {
+						if (!hasTrackedPlay) {
+							debugLog("VIDEO AUTOPLAY FAILED");
+
+							const btn = document.createElement("button");
+							btn.id = "playBtn";
+							btn.textContent = "▶";
+							btn.style.position = "absolute";
+							btn.style.left = "50%";
+							btn.style.top = "50%";
+							btn.style.transform = "translate(-50%, -50%)";
+							btn.style.zIndex = 10;
+							btn.style.fontSize = "48px";
+							btn.style.lineHeight = "64px";
+							btn.style.background = "rgba(0,0,0,0.8)";
+							btn.style.display = "inline-block";
+							btn.style.width = "64px";
+							btn.style.height = "64px";
+							btn.style.border = "none";
+							btn.style.color = "white";
+							btn.style.borderRadius = "50%";
+							document.getElementById("container").appendChild(btn);
+							btn.addEventListener("click", () => {
+								document.getElementById("video").play();
+								btn.remove();
+								debugLog("VIDEO MANUAL PLAY");
+							});
+						}
+						}, 2000);
+
+
+					if (muteBtn) {
+						muteBtn.addEventListener("click", () => {
+							video.muted = !video.muted;
+							// change class to off
+							muteBtn.className = video.muted ? "off" : "on";
+							// muteBtn.textContent = video.muted ? "🔇" : "🔊";
+						});
+					}
+				}
+				window.resdefined = true;
+				window.onresize = adjust_video_height;
+
+				
+			} else {
+				var videoObj = document.getElementById("video");
+				videoContainer.style.width = w + 'px';
+				videoContainer.style.height = h + 'px';
+				videoObj.style.width = w + 'px';
+				videoObj.style.height = h + 'px';
+			}
+
+			// send new height to parent
+			parent.postMessage({ "nh": h, "me": iframeid },"*");
+
+		}
+
+		window.addEventListener("load", () => { 
+			
+			adjust_video_height(); 
+		
+		
+		});
+
+		
+
+		// listen for the message of resize from parent
+		// to fix the video banner.
+		window.addEventListener("message", function(event) {
+			if (event.data.resized && event.data.me == iframeid) {
+				adjust_video_by_width( parseInt(event.data.resized) );
+			}
+		});
+
+		window.addEventListener("message", (event) => {
+			if (event.data === "visible") {
+				debugLog("VIDEO PLAYED BY PARENT MESSAGE");
+				document.getElementById("video")?.play().catch(() => {});
+			}
+		});
+
+	</script>
+	<style>
+		body { margin:0; padding:0; line-height: 1; background-color:transparent;}
+		#container, iframe {
+			width:100%;
+			margin:0 auto;
+			position:relative;
+		}
+		a {
+			position:absolute;top:0;left:0;width:100%;height:100%;
+		}
+		#muteBtn {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			z-index: 10;
+			color: white;
+			display: block;
+			width: 16px;
+			height: 16px;
+			background-color: #fff;
+			background-size: contain;
+			border: 1px solid #0006;
+			border-radius: 50%;
+			padding: 9px; cursor:pointer;
+			background-size: 14px 14px;
+			background-repeat: no-repeat;
+			background-position: 2px 2px;
+		}
+		
+		.on {
+				background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABHJJREFUeNrsVk1sG0UUfjv75931Os5PHTdOROqm+Wn6RwiNwk9BKIcqqoRShAIcOEAFQhwQSBzKgRuHCA6ot1YgDgUkhKASqhDqCYHUShClgGjaQhUamubPTvzv7M7OzDKzZd2klLQBVAmpzx6P/d6b+d733rxZS77vw50UBHdY7gLeVHZ03/fsrXxSqfYd/wlgb+f9bzGCetfz6d/dfYj65htd3X3P/SvAgZ2tH8wW1R5HtZ31/AyNdOlexnKL5aFUe8eufwQ4sLPt/cJypititY4wHyLr+X77/aXXDcu6qsnm09RqenXDgH3bO95eyFaTfmTz4LIdgxUjnlxtf6g3/a6YTStmhzpZheOaN/lduQTJdE/f0G0DcrCxXHZxj23qw6qqAnZdQJLEQvuDvekjhexCX3PvgeN16X1HQv25Xy+fqWtMTCKzcT9GsYOhXhEfj+9OfD6xsnlWkoDptOIKHWWSTBmzCPEiRl1qqMIxKNc3YAQ6VLPhBkUXv9cqV3/MeRcfLpD6Lzvu3Tdy6ew3J4Qt2RA9n5+ZglmsJ+NNzcl8dmE+AGTYtYlsvCxxRNN3QMySrABiDGQ+U0pBvOSI9pcMXJien9y+955jSk55wYPocNk3RTAnZFlGvemWUwjFxiJ284iViH3E9Z8FKcWU6MAIf2PwKAPXI+DymYDEc6AB0iKgIQNUYgBVc8CQo4aAnkfIhWX0sc3Xx3EGcHHWCjJEKTs3dfWnqlP4sKlc4fvoW2s15IwYjwgURakN8RshBOJyZwFTGVw3yHbgv5rlXCZ3EWMMuq4D9oi1KZnacg2UMUXVCiJjmEotNUAiaSu+x1uLuLx2DMLnR/AkYRR8SsBHHFjCQDlpH0nKakDL1G1fKoCiUpCi7fu1SLR2WiMKMVTgWfYJqgFyBihkJKIJRXwXOmETdRQMrgWy9nQnG+0ukRVCeGAr2a9K+exsaKPEs0SGVFnK1QAdX3EU3wWZOcKDB+Nxtk4wEFsJBiVVoBzY902+QqulVFUVpc32hstKHDJSErBmW8X8UnCK7ahpV/hWOcMA2av8VmsLToWWivlPAoVPgyB8CQWbxqLGqGCqyggwY3+6X2fX0ZbYtjI7/ZKvpUHTNGg2lDOhrau9ZRA7bHS+nP+UEPWHGuDpXzIHb9b0fAPdVuoVDcETTDZ4bQ2QTCT6sVbDTRH1tXI1Cji6F1h+5uT0z6cPh7YEwk+OG7vAwfPW4uXx64B/J/zkuXbUer6lMUZkgFFRS1EnWNWOGcc/amJ/W9SbeifKG6LIj2YA1hBPdKrFfifWCU1xc2LNTbOelMqVAgd9MVVvWAYrHTC1HkCU1Wp4fur3cT49euO6tkTzIVzcsofS4qn8/JWjG7q8BejMcvUZl6EvCgV+/BGU1vN/7IHuV0pLS4NFXDqZqDMnlhfnZm6bYSjlSrVkRPSnGpuuHANXY+v5VkvLj1Qh5VFdqsyd/frwGqNo7o0MVdX0dGf/m7fy69k6MBara0jcqJfu/i/93wP+IcAAbw8i8u3Oxq0AAAAASUVORK5CYII=);
+			}
+			.off {
+				background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAhpJREFUeNrslkuLFDEQx6sq6ec64xPZxfUmvhdFkcW7Jy+iHhQPXhQ8+Dk8iN9AEM9ePIifwaNn8SbKILvrtPPuR1IxSc942ovT9ICwaZp0p9L55V+VShqNMbDKQrDicgDct1w+f/3xskD5rx9cOnvjhWGSK1G4vbX5tjcMLuRBJ28duL11+s2gv3suXtu8ywbiVl167eKZV/1suh6lGzf7nS4cQbXemkILe5nt7VztpNHtIAigLAogRG6k8M6Vk+8/zzZ6iMCRnhSuTTMKzbymVBUnh0/dmliGtu3HSoIIpnuNgFwWHSWS52iJqcnB1SgkEDMIW2utwV0iDhvnoQeWWkWACtjuq5VmcPurJvJgkqFzIQjFQCoEHWTAlAeNgHZgFkLUDSg90Er07+7Z3aG157n1dlL3bwRUGM5MVbtSG/b1Agasa2hIwFiCtiZDKJvFkJkWCpHxr9HHkuqF7OIYRdF8IsvvwR6YG5lLU9SKtJq7VNd5M68rm+0Yd8Fw6t+aJT6iHg1/v/MNRvvZGyQ/aPdQ8sApDQRByTzv3nCVfvq6e28/YxiGUUcelTZ891kkYOyKwZRcPrazeZdlWfzMxk8qIK/exVkp1e55OBpPBr1fw2dcjT8m1TdIRQCkmVs9LRz0R3/6qGD6MBgMQBKMWj+Ax5PpKImjh8dPfH8NRdiuwkWZ5cUs2/nylBCKZYF48F/63wP/CDAA9vLqtTmJRC4AAAAASUVORK5CYII=);
+			}
+	</style>	
+</head>
+<body>
+	<!-- video container -->
+	<div id='container'></div>
+</body>
+</html>

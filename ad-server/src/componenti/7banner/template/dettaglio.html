@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<meta name="robots" content="noindex">
+
+	##JQUERYINCLUDE##
+
+	<!-- for viewer lightbox -->
+	<script src="##root##src/assets/viewer/viewer.min.js"></script>
+	<link rel="stylesheet" href="##root##src/assets/viewer/viewer.min.css"/>
+	<!-- -->	
+	<title>##TITLE##</title>
+	
+	<script>
+		
+		var templates = ##TEMPLATES##;
+		var money = "##MONEY##";
+		var datafutura = "##LASTDATE##";
+		var maxkb = "##KB##";
+		var onlybasic = ##onlybasic##;
+		var GEOIPDB = "##GEOIPDB##";
+		
+	</script>
+	<script src="##root##src/template/comode.js?v=##rand##"></script>
+	<script src="./template/dettaglio.js?v=##rand##"></script>
+</head>
+<body class="##bodyclass##">
+<div class="panel2">
+	<div class="titlecontainer">
+		<a href="##gestore##" class="annulla" title="{Cancel}"></a> <h1 class='title'>##TITLE##</h1> <a href="javascript:beforeSave()" class="salva"> {Save}</a>
+	</div>
+</div>
+<div class="corpo">
+	##STARTFORM##
+	##id##
+	##op##
+
+	<fieldset class='mainfieldset'>
+		<legend>{Main}</legend>
+		<div id='Datiprincipali'>
+			<table>
+				<tr id='tr_id'>
+					<td class='firstcol' class="small">{Banner ID}</td>
+					<td class="small"><b>##idid##</b>
+					</td>
+				</tr>
+				<tr>
+					<td class='firstcol'>{Position}*<br/></td>
+					
+					<td>##cd_posizione## 
+						<span id='span_status'>{Status}* ##fl_stato##</span>
+						<span id='paycontainercopy' class='paycontainer'></span>
+
+					</td>
+				</tr>
+				<tr>
+					<td class='firstcol'>{Title}*<br/></td>
+					<td>##de_nome##</td>
+				</tr>
+				<tr>
+					<td class='firstcol'>{Campaign}*<br/></td>
+					<td>##cd_campagna##</td>
+				</tr>
+			</table>
+		</div>
+	</fieldset>
+	
+	
+	
+	
+	
+	<fieldset class='mainfieldset'>
+		<legend>{Details}</legend>
+		<div id='Datiprincipali2'>
+			<table>
+
+				<tr id='bannertypetr'>
+					<td>{Banner type}: </td><td class='bannertype'>
+						<label><input type="radio" id="basico" name="tipo" value="basic"> {Basic} </label>
+						<label><input type="radio" id="scripted" name="tipo" value="scripted">{Script}<span class='icon-code'></span></label>
+						<label><input type="radio" id="html5" name="tipo" value="htm5">{HTML5}<span class='icon-folder'></span></label>
+						<label><input type="radio" id="video" name="tipo" value="video">{Video}<span class='icon-video'></span></label>
+					</td>
+				</tr>
+				<tr id='infobox'><!-- populated with js -->
+					<td class='firstcol'></td>
+					<td><p class="description"></p></td>
+				</tr>
+				<tr id='scriptbox'>
+					<td class='firstcol'></td>
+					<td>##de_codicescript##<br>
+					{Or pick a template}: <select id="template"> 
+						<option>--{choose}--</option>
+						##TEMPLATESOPTIONS##
+					</select>
+					<br><br>
+					</td>
+				</tr>
+				<tr id='videoaudiotoggle'>
+					<td class='firstcol'>{Show audio toggler}</td>
+					<td>##fl_audiotoggle##</td>
+				</tr>				
+
+				<tr id="linkbox">
+					<td class='firstcol'>{Link}</td>
+					<td>##de_url## {link target} ##de_target##
+					<br><br>
+					</td>
+				</tr>
+
+				<tr id="tr_clicktag">
+					<td class='firstcol'><a id='showclicktag' style='text-decoration:underline;font-size:.8em' href="#" onclick="event.preventDefault();jQuery('#td_clicktag').toggle();">{ClickTag}</a> <span data-rel="{Click to show data. Use this link to implement clicks in your HTML5 banners}" class="icon-help-circled"></span></td>
+					<td><div id="td_clicktag" style='display:none'>##URLFORTRACKING##</div></td>
+				</tr>
+
+				<tr>
+					<td class='firstcol'><a id='show3dparty' style='text-decoration:underline;font-size:.8em' href="#" onclick="event.preventDefault();jQuery('#td_3dparty').toggle();">{3d party tracking}</a> <span data-rel="{Click to show field. A third party tracking code could cause privacy issues, see documentation for GDPR compliance and other requirements}" class="icon-help-circled"></span></td>
+					<td><div id="td_3dparty" style='display:none'>##de_3dparty_code##</div></td>
+				</tr>
+
+				<tr>
+					<td class='firstcol'>{Media files}</td>
+					<td><div>##file##</div>
+					</td>
+				</tr>
+
+			</table>
+		</div>
+	</fieldset>
+
+	<fieldset class='mainfieldset' id='limitationfieldset'>
+		<legend>{Price and limitations}</legend>
+		<div id='Limiti'>
+			<table>
+				<tr>
+					<td class='firstcol' class="small">{Price}*:<br/></td>
+					
+					<td class="small" style="white-space: nowrap;">##nu_price## ##MONEY## 
+
+						<span id='paycontainer' class='paycontainer'>
+							<span id='paymodel'>##PAYMODEL##</span>
+							<span id='paymodelprice'>##PAYMODELPRICE##</span>
+						</span>						
+						
+					</td>
+				</tr>
+				<tr>
+					<td class='firstcol'>{From}*</td><td>##dt_giorno1## <span id='approxto' class='paycontainer'></span></td>
+				</tr>
+				<tr id="tr_giorno2">
+					<td class='firstcol'>{To}*</td><td>##dt_giorno2## ({dates included})</td>
+				</tr>
+				</tr>
+				<tr id='tr_maxclick'><td class='firstcol'>{Total click}:<br/></td>
+				<td>##nu_maxclick## <span class='noadvertiser'> <span data-rel="{use 0 for no limits}" class="icon-help-circled"></span></span></td></tr>
+
+				<tr id='tr_maximpressiontotal'><td class='firstcol'>{Total impressions}:<br/></td><td>##nu_maxtot## <span class='noadvertiser'> <span data-rel="{use 0 for no limits}" class="icon-help-circled"></span></span></td></tr>
+
+				<tr id='tr_maximpressiondaily'><td class='firstcol'>{Max daily impressions}:<br/></td><td>##nu_maxday## <span class='noadvertiser'> <span data-rel="{use 0 for no limits}" class="icon-help-circled"></span></span></td></tr>
+				<tr>
+					<td class='firstcol'>{Frequency cap}:<br/></td>
+					
+					<td>##nu_cap## <span data-rel="{limit the number of visualization per user per day}" class="icon-help-circled"></span></td>
+				</tr>
+				<tr id="tr_redux">
+					<td class='firstcol'>{Redux factor}:<br/></td>
+					
+					<td>##nu_redux## <span data-rel="{reduces the number of views by the indicated percentage to give more views to other banners}" class="icon-help-circled"></span></td>
+				</tr>
+				<tr>
+					<td class='firstcol'>{Referer filter}:<br/></td>
+					<td>##de_limit_referer## <span data-rel="{Limit impressions by matching the referer specified in the http request. Could be used to limit views in a website or on a specific url.}" class="icon-help-circled"></span></td>
+				</tr>
+
+			</table>
+		</div>
+	</fieldset>
+
+	<fieldset class='mainfieldset' id='limitationfieldset'>
+		<legend>{Targeting}</legend>
+		<div id='Targeting'>
+			<table>
+				<tr>
+					<td class='firstcol'>{Device type}:<br/></td>
+					<td>##nu_mobileflag##</td>
+				</tr>
+				<tr id='os_container'>
+					<td>{Limit to this OS}:<br/></td>
+					<td>##se_os##</td>
+				</tr>
+			</table>
+
+			<div id='geofieldset'>
+				<table>
+					<tr>
+						<td class='firstcol'>{Country}:<br/>
+							<a href="#" id="multicountry" style="text-decoration:underline;font-size:.8em">{Multiple countries}</a> <span data-rel="{Click to activate or deactivate the multiple countries selector}" class="icon-help-circled"></span>
+						</td>
+						<td>
+							<p class='description'>##de_country##<br>{Use geolocation to restrict banner delivery using users ip address.}</p> 
+							<p class='description note'>
+								<!-- hidden by js if there are countries -->
+								<a href='../frwconstants/index.php'><u>{To activate geolocation go to Config > Settings}</u></a>
+							</p>
+						</td>
+					</tr>
+					<tr id="regiontr">
+						<td class='firstcol'>{Region/State}:<br/></td>
+						<td>##de_region##</td>
+					</tr>
+					<tr id="citytr">
+						<td class='firstcol'>{City}:<br/></td>
+						<td>##de_city##</td>
+					</tr>
+				</table>
+			</div>
+			<div>
+				<table id='addcarrello'>
+					<tr>
+						<td class='firstcol'></td>
+						
+						<td><a href="#" id="addtokart" class="btn">{Save and go to checkout}</a>
+						
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</fieldset>
+
+	<fieldset class='mainfieldset' id="payment_process" data-rel='##SHOWPAYMENT##' style="display:none">
+		<legend>{Payment process}</legend>
+		<div>
+			<table>
+				<tr id="repeatbannerid" style="display:none">
+					<td class='firstcol'>{Banner ID}<br/></td>
+					<td>###idid##</td>
+				</tr>
+				<tr>
+					<td>{Payment type}<br/></td>
+					<td>##paymenttype##</td>
+				</tr>
+				<tr>
+					<td>{Price}<br/></td>
+					<td>##finalprice##</td>
+				</tr>
+				<tr>
+					<td>{Banner status}<br/></td>
+					<td>##bannerstatus##</td>
+				</tr>				
+				<tr id="instructions" style="display:none">
+					<td></td>
+					<td>##instructions##</td>
+				</tr>
+			</table>
+		</div>
+	</fieldset>
+	##ENDFORM##
+</div>
+
+
+
+</body>
+</html>
