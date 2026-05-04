@@ -216,6 +216,28 @@
   transform: translateY(0);
 }
 
+.signin-submit-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.signin-submit-btn:disabled:hover {
+  background-color: var(--color-primary);
+  transform: none;
+}
+
+.signin-form-error {
+  color: #b42318;
+  background: rgba(180, 35, 24, 0.08);
+  border: 1px solid rgba(180, 35, 24, 0.2);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  margin: 0;
+}
+
 .signup-prompt {
   text-align: center;
   font-size: 14px;

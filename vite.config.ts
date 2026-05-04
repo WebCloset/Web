@@ -18,13 +18,6 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ''),
         secure: true,
       },
-      // Proxy for AdAdmin PHP files during development
-      // Note: This requires a PHP server running locally
-      '/amb': {
-        target: 'http://localhost:8000', // Adjust to your PHP server port
-        changeOrigin: true,
-        secure: false,
-      },
     },
   },
 })

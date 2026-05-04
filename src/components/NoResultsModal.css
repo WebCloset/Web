@@ -1,0 +1,118 @@
+@import '../styles/colors.css';
+
+.no-results-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100001;
+  animation: no-results-fade-in 0.2s ease;
+  padding: 1rem;
+}
+
+@keyframes no-results-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.no-results-modal-panel {
+  position: relative;
+  background-color: var(--color-white);
+  border-radius: 24px;
+  max-width: 420px;
+  width: 100%;
+  padding: 2rem 2rem 1.75rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  animation: no-results-slide-up 0.28s ease;
+}
+
+@keyframes no-results-slide-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.no-results-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.no-results-modal-close:hover {
+  background-color: var(--color-gray-lightest);
+  color: var(--color-text-primary);
+}
+
+.no-results-modal-body {
+  text-align: center;
+  padding-right: 1.5rem;
+}
+
+.no-results-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.75rem;
+  line-height: 1.25;
+}
+
+.no-results-modal-text {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.no-results-modal-ok {
+  width: 100%;
+  max-width: 200px;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+  border: none;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.no-results-modal-ok:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.no-results-modal-ok:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .no-results-modal-panel {
+    padding: 1.75rem 1.25rem 1.5rem;
+  }
+
+  .no-results-modal-title {
+    font-size: 1.35rem;
+  }
+}

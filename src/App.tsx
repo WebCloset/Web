@@ -7,6 +7,8 @@ import SearchResults from './components/SearchResults'
 import PartnerLogos from './components/PartnerLogos'
 import Footer from './components/Footer'
 import About from './components/About'
+import AdminPage from './components/AdminPage'
+import NoResultsModal from './components/NoResultsModal'
 import backgroundImage from './assets/background.png'
 import { searchProducts } from './services/api'
 import { Product } from './types/api'
@@ -18,6 +20,7 @@ function Home() {
   const [searchError, setSearchError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [hasSearched, setHasSearched] = useState(false)
+  const [showNoResultsModal, setShowNoResultsModal] = useState(false)
   const resultsRef = useRef<HTMLElement | null>(null)
 
   const handleSearch = async (query: string) => {
@@ -25,10 +28,14 @@ function Home() {
     setIsSearching(true)
     setSearchError(null)
     setHasSearched(true)
+    setShowNoResultsModal(false)
 
     try {
       const products = await searchProducts(query)
       setSearchResults(products)
+      if (products.length === 0) {
+        setShowNoResultsModal(true)
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred while searching'
       setSearchError(errorMessage)
@@ -52,7 +59,12 @@ function Home() {
     }
   }, [hasSearched, isSearching])
 
-  const showSearchResults = hasSearched && (searchResults.length > 0 || isSearching || searchError)
+  const showSearchResults =
+    hasSearched &&
+    (isSearching ||
+      searchError != null ||
+      searchResults.length > 0 ||
+      (!isSearching && searchQuery.trim() !== ''))
 
   return (
     <>
@@ -84,6 +96,11 @@ function Home() {
           </>
         )}
       </main>
+      <NoResultsModal
+        isOpen={showNoResultsModal}
+        onClose={() => setShowNoResultsModal(false)}
+        searchQuery={searchQuery}
+      />
     </>
   )
 }
@@ -95,6 +112,7 @@ function App() {
         <Routes>
           <Route path="/home" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/" element={<Home />} />
           <Route path="*" element={<Home />} />
         </Routes>

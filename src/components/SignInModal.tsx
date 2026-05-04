@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useNavigate } from 'react-router-dom'
 import './SignInModal.css'
 import { HiX, HiEye, HiEyeOff } from 'react-icons/hi'
+import { adminLogin, adminTokenStorage } from '../services/adminApi'
 
 interface SignInModalProps {
   isOpen: boolean
@@ -9,15 +11,36 @@ interface SignInModalProps {
 }
 
 const SignInModal = ({ isOpen, onClose }: SignInModalProps) => {
-  const [email, setEmail] = useState('')
+  const navigate = useNavigate()
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isOpen) {
+      setAuthError(null)
+    }
+  }, [isOpen])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Sign in:', { email, password })
-    // Implement sign in logic here
-    onClose()
+    setAuthError(null)
+    setSubmitting(true)
+    try {
+      const response = await adminLogin(identifier.trim(), password)
+      adminTokenStorage.setSession(response.token, response.expires_at)
+      setIdentifier('')
+      setPassword('')
+      onClose()
+      navigate('/admin')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Sign in failed'
+      setAuthError(message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (!isOpen) return null
@@ -34,16 +57,18 @@ const SignInModal = ({ isOpen, onClose }: SignInModalProps) => {
         </div>
         <form className="signin-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email
+            <label htmlFor="signin-identifier" className="form-label">
+              Username
             </label>
             <input
-              type="email"
-              id="email"
+              type="text"
+              id="signin-identifier"
+              name="username"
               className="form-input"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Admin username"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              autoComplete="username"
               required
             />
           </div>
@@ -59,6 +84,7 @@ const SignInModal = ({ isOpen, onClose }: SignInModalProps) => {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 required
               />
               <button
@@ -84,8 +110,9 @@ const SignInModal = ({ isOpen, onClose }: SignInModalProps) => {
               Forgot password?
             </a>
           </div>
-          <button type="submit" className="signin-submit-btn">
-            Sign In
+          {authError && <p className="signin-form-error">{authError}</p>}
+          <button type="submit" className="signin-submit-btn" disabled={submitting}>
+            {submitting ? 'Signing in…' : 'Sign In'}
           </button>
           <div className="signup-prompt">
             <span>Don't have an account? </span>

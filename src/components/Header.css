@@ -73,6 +73,19 @@
   opacity: 0.8;
 }
 
+.sign-in-btn--logout {
+  background-color: var(--color-white);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border);
+}
+
+.sign-in-btn--logout:hover {
+  opacity: 1;
+  border-color: var(--color-primary);
+  color: var(--color-olive-dark, #3d4229);
+  background: rgba(165, 172, 121, 0.1);
+}
+
 @media (max-width: 768px) {
   .header {
     padding: 16px 20px;
