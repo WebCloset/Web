@@ -12,6 +12,9 @@ export interface AdsResponse {
   success: boolean;
   ads: Ad[];
   globalScript?: string;
+  /** Present when `success` is false (API or static JSON may include this). */
+  error?: string;
+  message?: string;
 }
 
 // Get ads URL: static JSON (no server) or custom API
@@ -48,7 +51,7 @@ export const fetchActiveAds = async (): Promise<Ad[]> => {
     const data: AdsResponse = await response.json();
 
     if (!data.success) {
-      console.error('Failed to fetch ads:', data.error);
+      console.error('Failed to fetch ads:', data.error ?? data.message ?? 'success=false');
       return [];
     }
 
