@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Hero from './components/Hero'
+import { SearchFilters } from './components/Hero'
 import PopularItems from './components/PopularItems'
 import SearchResults from './components/SearchResults'
 import PartnerLogos from './components/PartnerLogos'
@@ -15,16 +16,68 @@ import { Product } from './types/api'
 import './App.css'
 
 function Home() {
+  const defaultFilters: SearchFilters = {
+    sizes: [],
+    genders: [],
+    productType: "all",
+  }
+
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
+  const [activeFilters, setActiveFilters] = useState<SearchFilters>(defaultFilters)
   const [hasSearched, setHasSearched] = useState(false)
   const [showNoResultsModal, setShowNoResultsModal] = useState(false)
   const resultsRef = useRef<HTMLElement | null>(null)
 
-  const handleSearch = async (query: string) => {
+  const isRetailCondition = (condition?: string | null) => {
+    if (!condition) return false
+    const normalized = condition.toLowerCase()
+    return normalized.includes("new") || normalized.includes("nwt") || normalized.includes("retail")
+  }
+
+  const detectGender = (product: Product): "women" | "men" | "unisex" | "kids" | "unknown" => {
+    const text = `${product.title} ${product.category ?? ""}`.toLowerCase()
+    if (text.includes("women") || text.includes("womens") || text.includes("ladies")) return "women"
+    if (text.includes("men") || text.includes("mens")) return "men"
+    if (text.includes("unisex")) return "unisex"
+    if (text.includes("kids") || text.includes("boy") || text.includes("girl")) return "kids"
+    return "unknown"
+  }
+
+  const applyFilters = (products: Product[], filters: SearchFilters) => {
+    return products.filter((product) => {
+      if (filters.sizes.length > 0) {
+        const productSize = product.size?.toLowerCase()
+        if (!productSize || !filters.sizes.some((size) => productSize.includes(size.toLowerCase()))) {
+          return false
+        }
+      }
+
+      if (filters.genders.length > 0) {
+        const detectedGender = detectGender(product)
+        const matchesGender = filters.genders.some((gender) => gender.toLowerCase() === detectedGender)
+        if (!matchesGender) {
+          return false
+        }
+      }
+
+      if (filters.productType === "second-hand" && isRetailCondition(product.condition)) {
+        return false
+      }
+
+      if (filters.productType === "retail" && !isRetailCondition(product.condition)) {
+        return false
+      }
+
+      return true
+    })
+  }
+
+  const handleSearch = async (query: string, filters: SearchFilters) => {
     setSearchQuery(query)
+    setActiveFilters(filters)
     setIsSearching(true)
     setSearchError(null)
     setHasSearched(true)
@@ -32,8 +85,9 @@ function Home() {
 
     try {
       const products = await searchProducts(query)
-      setSearchResults(products)
-      if (products.length === 0) {
+      const filteredProducts = applyFilters(products, filters)
+      setSearchResults(filteredProducts)
+      if (filteredProducts.length === 0) {
         setShowNoResultsModal(true)
       }
     } catch (error) {
@@ -88,10 +142,11 @@ function Home() {
             isLoading={isSearching}
             error={searchError}
             searchQuery={searchQuery}
+            filters={activeFilters}
           />
         ) : (
           <>
-        <PopularItems />
+        <PopularItems onPopularItemSearch={handleSearch} />
         <PartnerLogos />
           </>
         )}

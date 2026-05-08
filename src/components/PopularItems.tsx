@@ -2,21 +2,34 @@ import { useState } from "react";
 import { colors } from "../styles/theme";
 import "./PopularItems.css";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { SearchFilters } from "./Hero";
 
 interface Product {
   id: number;
   name: string;
+  searchTerm: string;
   imageUrl: string;
   bgColor: string;
 }
 
-const PopularItems = () => {
+interface PopularItemsProps {
+  onPopularItemSearch?: (query: string, filters: SearchFilters) => void;
+}
+
+const PopularItems = ({ onPopularItemSearch }: PopularItemsProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const defaultFilters: SearchFilters = {
+    sizes: [],
+    genders: [],
+    productType: "all",
+  };
 
   const products: Product[] = [
     {
       id: 1,
       name: "Leather shoulder bag",
+      searchTerm: "bag",
       imageUrl:
         "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
       bgColor: colors.productPurple,
@@ -24,6 +37,7 @@ const PopularItems = () => {
     {
       id: 2,
       name: "Classic court sneaker",
+      searchTerm: "sneaker",
       imageUrl:
         "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
       bgColor: colors.productGreen,
@@ -31,6 +45,7 @@ const PopularItems = () => {
     {
       id: 3,
       name: "Women's midi skirt",
+      searchTerm: "skirt",
       imageUrl:
         "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=400&fit=crop",
       bgColor: colors.productGray,
@@ -38,15 +53,15 @@ const PopularItems = () => {
     {
       id: 4,
       name: "Soft orange cap",
+      searchTerm: "cap",
       imageUrl:
         "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&h=400&fit=crop",
       bgColor: colors.productGray,
     },
   ];
 
-  const handleProductClick = (productName: string) => {
-    console.log("Clicked product:", productName);
-    // Implement product navigation
+  const handleProductClick = (product: Product) => {
+    onPopularItemSearch?.(product.searchTerm, defaultFilters);
   };
 
   return (
@@ -60,7 +75,7 @@ const PopularItems = () => {
             <div
               key={product.id}
               className="product-card"
-              onClick={() => handleProductClick(product.name)}
+              onClick={() => handleProductClick(product)}
             >
               <div
                 className="product-image-container"

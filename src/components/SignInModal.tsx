@@ -53,7 +53,7 @@ const SignInModal = ({ isOpen, onClose }: SignInModalProps) => {
         </button>
         <div className="modal-header">
           <h2 className="modal-title">Sign In</h2>
-          <p className="modal-subtitle">Welcome back to WEB CLOSET</p>
+          <p className="modal-subtitle">Welcome back to WEB CLOSET ADMIN</p>
         </div>
         <form className="signin-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -106,20 +106,11 @@ const SignInModal = ({ isOpen, onClose }: SignInModalProps) => {
               <input type="checkbox" className="checkbox-input" />
               <span>Remember me</span>
             </label>
-            <a href="#forgot" className="forgot-link">
-              Forgot password?
-            </a>
           </div>
           {authError && <p className="signin-form-error">{authError}</p>}
           <button type="submit" className="signin-submit-btn" disabled={submitting}>
             {submitting ? 'Signing in…' : 'Sign In'}
           </button>
-          <div className="signup-prompt">
-            <span>Don't have an account? </span>
-            <a href="#signup" className="signup-link">
-              Sign up
-            </a>
-          </div>
         </form>
       </div>
     </div>

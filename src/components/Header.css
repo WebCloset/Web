@@ -64,13 +64,14 @@
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s ease;
   border-radius: 100px;
 
 }
 
 .sign-in-btn:hover {
-  opacity: 0.8;
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .sign-in-btn--logout {
