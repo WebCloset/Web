@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import { SearchFilters } from './components/Hero'
+import { DEFAULT_SEARCH_FILTERS, SearchFilters } from './components/Hero'
 import PopularItems from './components/PopularItems'
 import SearchResults from './components/SearchResults'
 import PartnerLogos from './components/PartnerLogos'
@@ -16,17 +16,11 @@ import { Product } from './types/api'
 import './App.css'
 
 function Home() {
-  const defaultFilters: SearchFilters = {
-    sizes: [],
-    genders: [],
-    productType: "all",
-  }
-
   const [searchResults, setSearchResults] = useState<Product[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [searchError, setSearchError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState<string>("")
-  const [activeFilters, setActiveFilters] = useState<SearchFilters>(defaultFilters)
+  const [activeFilters, setActiveFilters] = useState<SearchFilters>(DEFAULT_SEARCH_FILTERS)
   const [hasSearched, setHasSearched] = useState(false)
   const [showNoResultsModal, setShowNoResultsModal] = useState(false)
   const resultsRef = useRef<HTMLElement | null>(null)
@@ -68,6 +62,14 @@ function Home() {
       }
 
       if (filters.productType === "retail" && !isRetailCondition(product.condition)) {
+        return false
+      }
+
+      if (filters.priceMin != null && product.price < filters.priceMin) {
+        return false
+      }
+
+      if (filters.priceMax != null && product.price > filters.priceMax) {
         return false
       }
 

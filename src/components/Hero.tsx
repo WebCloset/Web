@@ -6,7 +6,101 @@ export interface SearchFilters {
   sizes: string[];
   genders: string[];
   productType: "all" | "second-hand" | "retail";
+  priceMin: number | null;
+  priceMax: number | null;
 }
+
+export const DEFAULT_SEARCH_FILTERS: SearchFilters = {
+  sizes: [],
+  genders: [],
+  productType: "all",
+  priceMin: null,
+  priceMax: null,
+};
+
+interface DiscoveryChip {
+  label: string;
+  query: string;
+  filters?: Partial<SearchFilters>;
+}
+
+interface DiscoverySection {
+  id: string;
+  title: string;
+  chips: DiscoveryChip[];
+}
+
+const RECENT_SEARCHES_KEY = "webcloset_recent_searches";
+
+const DISCOVERY_SECTIONS: DiscoverySection[] = [
+  {
+    id: "trending",
+    title: "Trending searches",
+    chips: [
+      { label: "Nike Dunk", query: "Nike Dunk" },
+      { label: "Vintage denim", query: "vintage denim" },
+      { label: "Designer bags", query: "designer bag" },
+      { label: "Y2K tops", query: "Y2K top" },
+      { label: "Air Jordan", query: "Air Jordan" },
+    ],
+  },
+  {
+    id: "under50",
+    title: "Best under $50",
+    chips: [
+      { label: "Sneakers", query: "sneakers", filters: { priceMax: 50 } },
+      { label: "Vintage tees", query: "vintage tee", filters: { priceMax: 50 } },
+      { label: "Accessories", query: "accessories", filters: { priceMax: 50 } },
+      { label: "Second-hand hoodies", query: "hoodie", filters: { priceMax: 50, productType: "second-hand" } },
+    ],
+  },
+  {
+    id: "designer",
+    title: "Designer deals",
+    chips: [
+      { label: "Gucci", query: "Gucci" },
+      { label: "Prada", query: "Prada" },
+      { label: "Louis Vuitton", query: "Louis Vuitton" },
+      { label: "Balenciaga", query: "Balenciaga" },
+    ],
+  },
+  {
+    id: "vintage",
+    title: "Vintage picks",
+    chips: [
+      { label: "Vintage jacket", query: "vintage jacket" },
+      { label: "90s denim", query: "90s denim" },
+      { label: "Retro sneakers", query: "retro sneakers" },
+      { label: "Vintage band tee", query: "vintage band tee" },
+    ],
+  },
+];
+
+const getRecentSearches = (): string[] => {
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((item) => typeof item === "string") : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveRecentSearch = (query: string) => {
+  const trimmed = query.trim();
+  if (!trimmed) return;
+  const updated = [trimmed, ...getRecentSearches().filter((item) => item !== trimmed)].slice(0, 6);
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+};
+
+const normalizeFilters = (filters: SearchFilters): SearchFilters => {
+  const { priceMin, priceMax, ...rest } = filters;
+  if (priceMin != null && priceMax != null && priceMin > priceMax) {
+    return { ...rest, priceMin: priceMax, priceMax: priceMin };
+  }
+  return filters;
+};
 
 interface HeroProps {
   onSearch?: (query: string, filters: SearchFilters) => void;
@@ -15,15 +109,16 @@ interface HeroProps {
 const Hero = ({ onSearch }: HeroProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const filterContainerRef = useRef<HTMLDivElement | null>(null);
-  const [filters, setFilters] = useState<SearchFilters>({
-    sizes: [],
-    genders: [],
-    productType: "all",
-  });
+  const [filters, setFilters] = useState<SearchFilters>(DEFAULT_SEARCH_FILTERS);
 
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
   const genderOptions = ["Women", "Men", "Unisex", "Kids"];
+
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
 
   const toggleArrayFilter = (key: "sizes" | "genders", value: string) => {
     setFilters((current) => {
@@ -39,10 +134,29 @@ const Hero = ({ onSearch }: HeroProps) => {
     });
   };
 
+  const runSearch = (query: string, searchFilters: SearchFilters) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+
+    const effectiveFilters = normalizeFilters(searchFilters);
+    setSearchQuery(trimmed);
+    setFilters(effectiveFilters);
+    saveRecentSearch(trimmed);
+    setRecentSearches(getRecentSearches());
+    onSearch?.(trimmed, effectiveFilters);
+  };
+
   const handleSearch = () => {
-    if (searchQuery.trim()) {
-      onSearch?.(searchQuery.trim(), filters);
-    }
+    runSearch(searchQuery, filters);
+  };
+
+  const handleChipSearch = (query: string, chipFilters?: Partial<SearchFilters>) => {
+    const mergedFilters: SearchFilters = {
+      ...DEFAULT_SEARCH_FILTERS,
+      ...filters,
+      ...chipFilters,
+    };
+    runSearch(query, mergedFilters);
   };
 
   const handleLucky = () => {
@@ -57,8 +171,15 @@ const Hero = ({ onSearch }: HeroProps) => {
     ];
     const randomQuery =
       luckyQueries[Math.floor(Math.random() * luckyQueries.length)];
-    setSearchQuery(randomQuery);
-    onSearch?.(randomQuery, filters);
+    runSearch(randomQuery, filters);
+  };
+
+  const handlePriceChange = (key: "priceMin" | "priceMax", value: string) => {
+    const parsed = value === "" ? null : Number(value);
+    setFilters((current) => ({
+      ...current,
+      [key]: parsed != null && !Number.isNaN(parsed) && parsed >= 0 ? parsed : null,
+    }));
   };
 
   useEffect(() => {
@@ -80,15 +201,31 @@ const Hero = ({ onSearch }: HeroProps) => {
     };
   }, [showFilters]);
 
+  const recentSection: DiscoverySection | null =
+    recentSearches.length > 0
+      ? {
+          id: "recent",
+          title: "Recently found",
+          chips: recentSearches.map((query) => ({ label: query, query })),
+        }
+      : {
+          id: "recent",
+          title: "Recently found",
+          chips: [
+            { label: "Leather bag", query: "leather bag" },
+            { label: "White sneakers", query: "white sneakers" },
+            { label: "Midi skirt", query: "midi skirt" },
+          ],
+        };
+
+  const discoverySections = [DISCOVERY_SECTIONS[0], recentSection, ...DISCOVERY_SECTIONS.slice(1)];
+
   return (
     <section className="hero">
       <div className="hero-container">
         <div className="hero-subtitle">
           <h1 className="hero-title">
-            <span className="hero-title2">STYLE FROM</span>{" "}
-            EVERY MARKETPLACE.
-            <br />
-            IN ONE PLACE.
+            Search second-hand and retail fashion from multiple marketplaces in one place.
           </h1>
         </div>
 
@@ -104,14 +241,23 @@ const Hero = ({ onSearch }: HeroProps) => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
-              <button
-                type="button"
-                className="filter-button filter-button--icon"
-                aria-label="Open filters"
-                onClick={() => setShowFilters((current) => !current)}
-              >
-                <HiAdjustments size={18} />
-              </button>
+              <div className="search-box-actions">
+                <button
+                  type="button"
+                  className="filter-button filter-button--icon"
+                  aria-label="Open filters"
+                  onClick={() => setShowFilters((current) => !current)}
+                >
+                  <HiAdjustments size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="btn-search btn-search--inline"
+                  onClick={handleSearch}
+                >
+                  Search
+                </button>
+              </div>
 
               {showFilters && (
                 <div className="filters-panel filters-dropdown">
@@ -177,15 +323,69 @@ const Hero = ({ onSearch }: HeroProps) => {
                       ))}
                     </div>
                   </div>
+
+                  <div className="filters-group">
+                    <span className="filters-title">Price</span>
+                    <div className="price-range-inputs">
+                      <div className="price-input-wrapper">
+                        <label className="price-input-label" htmlFor="price-min">
+                          Min ($)
+                        </label>
+                        <input
+                          id="price-min"
+                          type="number"
+                          className="price-input"
+                          min="0"
+                          step="1"
+                          placeholder="Min"
+                          value={filters.priceMin ?? ""}
+                          onChange={(e) => handlePriceChange("priceMin", e.target.value)}
+                        />
+                      </div>
+                      <span className="price-range-separator">–</span>
+                      <div className="price-input-wrapper">
+                        <label className="price-input-label" htmlFor="price-max">
+                          Max ($)
+                        </label>
+                        <input
+                          id="price-max"
+                          type="number"
+                          className="price-input"
+                          min="0"
+                          step="1"
+                          placeholder="Max"
+                          value={filters.priceMax ?? ""}
+                          onChange={(e) => handlePriceChange("priceMax", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
+          <div className="discovery-sections">
+            {discoverySections.map((section) => (
+              <div key={section.id} className="discovery-section">
+                <span className="discovery-section-title">{section.title}</span>
+                <div className="discovery-chips">
+                  {section.chips.map((chip) => (
+                    <button
+                      key={`${section.id}-${chip.label}`}
+                      type="button"
+                      className="discovery-chip"
+                      onClick={() => handleChipSearch(chip.query, chip.filters)}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="hero-buttons">
-            <button className="btn-search" onClick={handleSearch}>
-              Search
-            </button>
             <button className="btn-lucky" onClick={handleLucky}>
               I'm feeling lucky
             </button>

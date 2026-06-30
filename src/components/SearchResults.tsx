@@ -146,6 +146,8 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
             {filters.productType !== "all" && (
               <span>Type: {filters.productType === "second-hand" ? "Second-hand" : "Retail"}</span>
             )}
+            {filters.priceMin != null && <span>Min price: ${filters.priceMin}</span>}
+            {filters.priceMax != null && <span>Max price: ${filters.priceMax}</span>}
           </div>
         )}
         <div className="products-grid">

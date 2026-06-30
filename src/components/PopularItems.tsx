@@ -2,7 +2,7 @@ import { useState } from "react";
 import { colors } from "../styles/theme";
 import "./PopularItems.css";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
-import { SearchFilters } from "./Hero";
+import { DEFAULT_SEARCH_FILTERS, SearchFilters } from "./Hero";
 
 interface Product {
   id: number;
@@ -18,12 +18,6 @@ interface PopularItemsProps {
 
 const PopularItems = ({ onPopularItemSearch }: PopularItemsProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const defaultFilters: SearchFilters = {
-    sizes: [],
-    genders: [],
-    productType: "all",
-  };
 
   const products: Product[] = [
     {
@@ -61,7 +55,7 @@ const PopularItems = ({ onPopularItemSearch }: PopularItemsProps) => {
   ];
 
   const handleProductClick = (product: Product) => {
-    onPopularItemSearch?.(product.searchTerm, defaultFilters);
+    onPopularItemSearch?.(product.searchTerm, DEFAULT_SEARCH_FILTERS);
   };
 
   return (

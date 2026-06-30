@@ -11,14 +11,17 @@
 }
 
 .hero-title {
-  font-size: 48px;
+  font-size: 38px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 48px;
-  line-height: 1.2;
+  line-height: 1.35;
   text-align: center;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     sans-serif;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero-title2 {
@@ -40,6 +43,8 @@
 .search-box {
   position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .search-icon {
@@ -49,11 +54,12 @@
   transform: translateY(-50%);
   color: var(--color-gray-text);
   pointer-events: none;
+  z-index: 2;
 }
 
 .search-input {
   width: 100%;
-  padding: 25px 68px 25px 60px;
+  padding: 25px 220px 25px 60px;
   font-size: 20px;
   border: 2px solid var(--color-border);
   border-radius: 80px;
@@ -69,6 +75,17 @@
 
 .search-input::placeholder {
   color: var(--color-text-light);
+}
+
+.search-box-actions {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
 }
 
 .filter-button {
@@ -88,16 +105,11 @@
 }
 
 .filter-button--icon {
-  position: absolute;
-  top: 50%;
-  right: 14px;
-  transform: translateY(-50%);
   width: 38px;
   height: 38px;
   border-radius: 50%;
   padding: 0;
   justify-content: center;
-  z-index: 3;
 }
 
 .filter-button:hover {
@@ -108,7 +120,7 @@
 }
 
 .filter-button--icon:hover {
-  transform: translateY(-50%) scale(1.04);
+  transform: translateY(-1px) scale(1.04);
 }
 
 .filters-panel {
@@ -174,22 +186,114 @@
   color: var(--color-text-white);
 }
 
+.price-range-inputs {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  width: 100%;
+}
+
+.price-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.price-input-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-gray-text);
+}
+
+.price-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.price-range-separator {
+  color: var(--color-gray-text);
+  font-weight: 600;
+  padding-bottom: 10px;
+}
+
+.discovery-sections {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.discovery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.discovery-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.discovery-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.discovery-chip {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-text-primary);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.discovery-chip:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-text-white);
+  transform: translateY(-1px);
+}
+
 .hero-buttons {
   display: flex;
   gap: 16px;
   justify-content: center;
 }
 
-.btn-search{
+.btn-search {
   font-size: 16px;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   padding: 16px 34px;
   border-radius: 100px;
 }
+
+.btn-search--inline {
+  padding: 12px 22px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
 .btn-lucky {
   font-size: 16px;
   font-weight: 600;
@@ -232,19 +336,28 @@
   }
 
   .hero-title {
-    font-size: 32px;
+    font-size: 26px;
     margin-bottom: 32px;
   }
 
   .search-input {
-    padding: 16px 54px 16px 52px;
+    padding: 16px 150px 16px 52px;
     font-size: 14px;
+  }
+
+  .search-box-actions {
+    right: 6px;
+    gap: 4px;
   }
 
   .filter-button--icon {
     width: 34px;
     height: 34px;
-    right: 10px;
+  }
+
+  .btn-search--inline {
+    padding: 10px 14px;
+    font-size: 13px;
   }
 
   .hero-buttons {
@@ -253,9 +366,24 @@
     max-width: 700px;
   }
 
-  .btn-search,
   .btn-lucky {
     width: 100%;
     padding: 12px 24px;
+  }
+
+  .discovery-chip {
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    padding-right: 132px;
+  }
+
+  .btn-search--inline {
+    padding: 9px 12px;
+    font-size: 12px;
   }
 }
