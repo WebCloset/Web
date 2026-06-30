@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import "./Hero.css";
-import { HiAdjustments, HiSearch } from "react-icons/hi";
+import { HiAdjustments, HiChevronDown, HiMicrophone, HiSearch } from "react-icons/hi";
+import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 
 export interface SearchFilters {
   sizes: string[];
@@ -109,6 +110,8 @@ interface HeroProps {
 const Hero = ({ onSearch }: HeroProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [discoveryOpen, setDiscoveryOpen] = useState(false);
+  const [activeDiscoveryId, setActiveDiscoveryId] = useState("trending");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const filterContainerRef = useRef<HTMLDivElement | null>(null);
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_SEARCH_FILTERS);
@@ -149,6 +152,20 @@ const Hero = ({ onSearch }: HeroProps) => {
   const handleSearch = () => {
     runSearch(searchQuery, filters);
   };
+
+  const handleVoiceResult = useCallback(
+    (transcript: string) => {
+      runSearch(transcript, filters);
+    },
+    [filters]
+  );
+
+  const {
+    isListening,
+    isSupported: isVoiceSupported,
+    error: voiceError,
+    startListening,
+  } = useSpeechRecognition(handleVoiceResult);
 
   const handleChipSearch = (query: string, chipFilters?: Partial<SearchFilters>) => {
     const mergedFilters: SearchFilters = {
@@ -219,6 +236,8 @@ const Hero = ({ onSearch }: HeroProps) => {
         };
 
   const discoverySections = [DISCOVERY_SECTIONS[0], recentSection, ...DISCOVERY_SECTIONS.slice(1)];
+  const activeDiscoverySection =
+    discoverySections.find((section) => section.id === activeDiscoveryId) ?? discoverySections[0];
 
   return (
     <section className="hero">
@@ -242,6 +261,19 @@ const Hero = ({ onSearch }: HeroProps) => {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
               <div className="search-box-actions">
+                {isVoiceSupported && (
+                  <button
+                    type="button"
+                    className={`filter-button filter-button--icon mic-button ${
+                      isListening ? "is-listening" : ""
+                    }`}
+                    aria-label={isListening ? "Stop voice search" : "Search by voice"}
+                    aria-pressed={isListening}
+                    onClick={startListening}
+                  >
+                    <HiMicrophone size={18} />
+                  </button>
+                )}
                 <button
                   type="button"
                   className="filter-button filter-button--icon"
@@ -363,16 +395,55 @@ const Hero = ({ onSearch }: HeroProps) => {
                 </div>
               )}
             </div>
+            {voiceError && (
+              <p className="voice-search-message" role="alert">
+                {voiceError}
+              </p>
+            )}
+            {isListening && (
+              <p className="voice-search-message voice-search-message--listening" aria-live="polite">
+                Listening… speak your search
+              </p>
+            )}
           </div>
 
-          <div className="discovery-sections">
-            {discoverySections.map((section) => (
-              <div key={section.id} className="discovery-section">
-                <span className="discovery-section-title">{section.title}</span>
-                <div className="discovery-chips">
-                  {section.chips.map((chip) => (
+          <div className="discovery-panel">
+            <button
+              type="button"
+              className={`discovery-toggle ${discoveryOpen ? "is-open" : ""}`}
+              onClick={() => setDiscoveryOpen((open) => !open)}
+              aria-expanded={discoveryOpen}
+            >
+              Browse suggestions
+              <HiChevronDown className="discovery-toggle-icon" size={16} aria-hidden />
+            </button>
+
+            {discoveryOpen && (
+              <div className="discovery-sections">
+                <div className="discovery-tabs" role="tablist" aria-label="Suggestion categories">
+                  {discoverySections.map((section) => (
                     <button
-                      key={`${section.id}-${chip.label}`}
+                      key={section.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeDiscoveryId === section.id}
+                      className={`discovery-tab ${
+                        activeDiscoveryId === section.id ? "is-active" : ""
+                      }`}
+                      onClick={() => setActiveDiscoveryId(section.id)}
+                    >
+                      {section.title}
+                    </button>
+                  ))}
+                </div>
+                <div
+                  className="discovery-chips"
+                  role="tabpanel"
+                  aria-label={activeDiscoverySection.title}
+                >
+                  {activeDiscoverySection.chips.map((chip) => (
+                    <button
+                      key={`${activeDiscoverySection.id}-${chip.label}`}
                       type="button"
                       className="discovery-chip"
                       onClick={() => handleChipSearch(chip.query, chip.filters)}
@@ -382,7 +453,7 @@ const Hero = ({ onSearch }: HeroProps) => {
                   ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
 
           <div className="hero-buttons">
