@@ -242,9 +242,17 @@ const Hero = ({ onSearch }: HeroProps) => {
   return (
     <section className="hero">
       <div className="hero-container">
-        <div className="hero-subtitle">
+        <div className="hero-headline">
+          <p className="hero-eyebrow">One search · Every marketplace</p>
           <h1 className="hero-title">
-            Search second-hand and retail fashion from multiple marketplaces in one place.
+            <span className="hero-title-line">
+              Search{" "}
+              <span className="hero-title-accent">second-hand & retail</span> fashion
+            </span>
+            <span className="hero-title-line hero-title-line--secondary">
+              from multiple marketplaces{" "}
+              <span className="hero-title-emphasis">in one place.</span>
+            </span>
           </h1>
         </div>
 
