@@ -1,0 +1,88 @@
+@import '../styles/colors.css';
+
+.profile-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-hero-wrapper {
+  position: relative;
+}
+
+.profile-hero-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--profile-bg-image);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  z-index: 0;
+}
+
+.profile-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(165, 172, 121, 0.15), rgba(255, 255, 255, 0.6));
+  z-index: 1;
+}
+
+.profile-hero-content {
+  position: relative;
+  z-index: 2;
+}
+
+.profile-hero {
+  padding: 40px 40px 60px;
+  text-align: center;
+}
+
+.profile-title {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.profile-main {
+  flex: 1;
+  padding: 60px 40px;
+}
+
+.profile-container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.profile-greeting {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.profile-email {
+  color: var(--color-text-secondary);
+  margin: 0 0 24px;
+}
+
+.profile-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--color-primary);
+  color: var(--color-text-white);
+  text-decoration: none;
+  border-radius: 100px;
+  font-weight: 600;
+}
+
+.profile-message {
+  color: var(--color-text-secondary);
+  font-size: 18px;
+}
+
+.profile-message a {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}

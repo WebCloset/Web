@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./Hero.css";
-import { HiAdjustments, HiChevronDown, HiMicrophone, HiSearch } from "react-icons/hi";
+import { HiAdjustments, HiMicrophone, HiSearch } from "react-icons/hi";
 import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
+import ConnectedMarketplacesTicker from "./ConnectedMarketplacesTicker";
 
 export interface SearchFilters {
   sizes: string[];
@@ -19,62 +20,17 @@ export const DEFAULT_SEARCH_FILTERS: SearchFilters = {
   priceMax: null,
 };
 
-interface DiscoveryChip {
-  label: string;
-  query: string;
-  filters?: Partial<SearchFilters>;
-}
-
-interface DiscoverySection {
-  id: string;
-  title: string;
-  chips: DiscoveryChip[];
-}
-
 const RECENT_SEARCHES_KEY = "webcloset_recent_searches";
 
-const DISCOVERY_SECTIONS: DiscoverySection[] = [
-  {
-    id: "trending",
-    title: "Trending searches",
-    chips: [
-      { label: "Nike Dunk", query: "Nike Dunk" },
-      { label: "Vintage denim", query: "vintage denim" },
-      { label: "Designer bags", query: "designer bag" },
-      { label: "Y2K tops", query: "Y2K top" },
-      { label: "Air Jordan", query: "Air Jordan" },
-    ],
-  },
-  {
-    id: "under50",
-    title: "Best under $50",
-    chips: [
-      { label: "Sneakers", query: "sneakers", filters: { priceMax: 50 } },
-      { label: "Vintage tees", query: "vintage tee", filters: { priceMax: 50 } },
-      { label: "Accessories", query: "accessories", filters: { priceMax: 50 } },
-      { label: "Second-hand hoodies", query: "hoodie", filters: { priceMax: 50, productType: "second-hand" } },
-    ],
-  },
-  {
-    id: "designer",
-    title: "Designer deals",
-    chips: [
-      { label: "Gucci", query: "Gucci" },
-      { label: "Prada", query: "Prada" },
-      { label: "Louis Vuitton", query: "Louis Vuitton" },
-      { label: "Balenciaga", query: "Balenciaga" },
-    ],
-  },
-  {
-    id: "vintage",
-    title: "Vintage picks",
-    chips: [
-      { label: "Vintage jacket", query: "vintage jacket" },
-      { label: "90s denim", query: "90s denim" },
-      { label: "Retro sneakers", query: "retro sneakers" },
-      { label: "Vintage band tee", query: "vintage band tee" },
-    ],
-  },
+const ROTATING_PLACEHOLDERS = [
+  "black converse",
+  "white linen trousers",
+  "pink Ralph Lauren shirt",
+  "vintage Nike hoodie",
+  "designer leather bag",
+  "Y2K cargo pants",
+  "Carhartt work jacket",
+  "white Air Force 1",
 ];
 
 const getRecentSearches = (): string[] => {
@@ -110,21 +66,31 @@ interface HeroProps {
 const Hero = ({ onSearch }: HeroProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [discoveryOpen, setDiscoveryOpen] = useState(false);
-  const [activeDiscoveryId, setActiveDiscoveryId] = useState("trending");
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [placeholderVisible, setPlaceholderVisible] = useState(true);
   const filterContainerRef = useRef<HTMLDivElement | null>(null);
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_SEARCH_FILTERS);
+  const [pendingFilters, setPendingFilters] = useState<SearchFilters>(DEFAULT_SEARCH_FILTERS);
 
   const sizeOptions = ["XS", "S", "M", "L", "XL", "XXL"];
   const genderOptions = ["Women", "Men", "Unisex", "Kids"];
 
   useEffect(() => {
-    setRecentSearches(getRecentSearches());
-  }, []);
+    if (searchQuery.trim()) return;
+
+    const interval = setInterval(() => {
+      setPlaceholderVisible(false);
+      setTimeout(() => {
+        setPlaceholderIndex((current) => (current + 1) % ROTATING_PLACEHOLDERS.length);
+        setPlaceholderVisible(true);
+      }, 320);
+    }, 3200);
+
+    return () => clearInterval(interval);
+  }, [searchQuery]);
 
   const toggleArrayFilter = (key: "sizes" | "genders", value: string) => {
-    setFilters((current) => {
+    setPendingFilters((current) => {
       const exists = current[key].includes(value);
       const nextValues = exists
         ? current[key].filter((item) => item !== value)
@@ -144,8 +110,8 @@ const Hero = ({ onSearch }: HeroProps) => {
     const effectiveFilters = normalizeFilters(searchFilters);
     setSearchQuery(trimmed);
     setFilters(effectiveFilters);
+    setPendingFilters(effectiveFilters);
     saveRecentSearch(trimmed);
-    setRecentSearches(getRecentSearches());
     onSearch?.(trimmed, effectiveFilters);
   };
 
@@ -167,36 +133,28 @@ const Hero = ({ onSearch }: HeroProps) => {
     startListening,
   } = useSpeechRecognition(handleVoiceResult);
 
-  const handleChipSearch = (query: string, chipFilters?: Partial<SearchFilters>) => {
-    const mergedFilters: SearchFilters = {
-      ...DEFAULT_SEARCH_FILTERS,
-      ...filters,
-      ...chipFilters,
-    };
-    runSearch(query, mergedFilters);
-  };
-
-  const handleLucky = () => {
-    const luckyQueries = [
-      "red shoes",
-      "nike air jordan",
-      "vintage jacket",
-      "designer bag",
-      "sneakers",
-      "dress",
-      "hoodie",
-    ];
-    const randomQuery =
-      luckyQueries[Math.floor(Math.random() * luckyQueries.length)];
-    runSearch(randomQuery, filters);
-  };
-
   const handlePriceChange = (key: "priceMin" | "priceMax", value: string) => {
     const parsed = value === "" ? null : Number(value);
-    setFilters((current) => ({
+    setPendingFilters((current) => ({
       ...current,
       [key]: parsed != null && !Number.isNaN(parsed) && parsed >= 0 ? parsed : null,
     }));
+  };
+
+  const handleOpenFilters = () => {
+    setPendingFilters(filters);
+    setShowFilters((current) => !current);
+  };
+
+  const handleApplyFilters = () => {
+    const effectiveFilters = normalizeFilters(pendingFilters);
+    setFilters(effectiveFilters);
+    setPendingFilters(effectiveFilters);
+    setShowFilters(false);
+
+    if (searchQuery.trim()) {
+      onSearch?.(searchQuery.trim(), effectiveFilters);
+    }
   };
 
   useEffect(() => {
@@ -209,6 +167,7 @@ const Hero = ({ onSearch }: HeroProps) => {
         !filterContainerRef.current.contains(targetNode)
       ) {
         setShowFilters(false);
+        setPendingFilters(filters);
       }
     };
 
@@ -216,28 +175,9 @@ const Hero = ({ onSearch }: HeroProps) => {
     return () => {
       document.removeEventListener("mousedown", handleOutsideClick);
     };
-  }, [showFilters]);
+  }, [showFilters, filters]);
 
-  const recentSection: DiscoverySection | null =
-    recentSearches.length > 0
-      ? {
-          id: "recent",
-          title: "Recently found",
-          chips: recentSearches.map((query) => ({ label: query, query })),
-        }
-      : {
-          id: "recent",
-          title: "Recently found",
-          chips: [
-            { label: "Leather bag", query: "leather bag" },
-            { label: "White sneakers", query: "white sneakers" },
-            { label: "Midi skirt", query: "midi skirt" },
-          ],
-        };
-
-  const discoverySections = [DISCOVERY_SECTIONS[0], recentSection, ...DISCOVERY_SECTIONS.slice(1)];
-  const activeDiscoverySection =
-    discoverySections.find((section) => section.id === activeDiscoveryId) ?? discoverySections[0];
+  const showRotatingPlaceholder = !searchQuery.trim();
 
   return (
     <section className="hero">
@@ -247,11 +187,8 @@ const Hero = ({ onSearch }: HeroProps) => {
           <h1 className="hero-title">
             <span className="hero-title-line">
               Search{" "}
-              <span className="hero-title-accent">second-hand & retail</span> fashion
-            </span>
-            <span className="hero-title-line hero-title-line--secondary">
-              from multiple marketplaces{" "}
-              <span className="hero-title-emphasis">in one place.</span>
+              <span className="hero-title-accent">second-hand & retail</span>{" "}
+              fashion from multiple marketplaces in one place.
             </span>
           </h1>
         </div>
@@ -260,14 +197,27 @@ const Hero = ({ onSearch }: HeroProps) => {
           <div className="search-box-wrapper" ref={filterContainerRef}>
             <div className="search-box">
               <HiSearch className="search-icon" size={24} />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Search from Depop, eBay, Grailed, Vinted, ..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
+              <div className="search-input-wrap">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder=""
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  aria-label="Search for fashion items"
+                />
+                {showRotatingPlaceholder && (
+                  <span
+                    className={`search-placeholder-overlay ${
+                      placeholderVisible ? "is-visible" : "is-fading"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    Search for &ldquo;{ROTATING_PLACEHOLDERS[placeholderIndex]}&rdquo;
+                  </span>
+                )}
+              </div>
               <div className="search-box-actions">
                 {isVoiceSupported && (
                   <button
@@ -286,7 +236,8 @@ const Hero = ({ onSearch }: HeroProps) => {
                   type="button"
                   className="filter-button filter-button--icon"
                   aria-label="Open filters"
-                  onClick={() => setShowFilters((current) => !current)}
+                  aria-expanded={showFilters}
+                  onClick={handleOpenFilters}
                 >
                   <HiAdjustments size={18} />
                 </button>
@@ -309,7 +260,7 @@ const Hero = ({ onSearch }: HeroProps) => {
                           key={size}
                           type="button"
                           className={`filter-tag ${
-                            filters.sizes.includes(size) ? "is-selected" : ""
+                            pendingFilters.sizes.includes(size) ? "is-selected" : ""
                           }`}
                           onClick={() => toggleArrayFilter("sizes", size)}
                         >
@@ -327,7 +278,7 @@ const Hero = ({ onSearch }: HeroProps) => {
                           key={gender}
                           type="button"
                           className={`filter-tag ${
-                            filters.genders.includes(gender) ? "is-selected" : ""
+                            pendingFilters.genders.includes(gender) ? "is-selected" : ""
                           }`}
                           onClick={() => toggleArrayFilter("genders", gender)}
                         >
@@ -345,10 +296,10 @@ const Hero = ({ onSearch }: HeroProps) => {
                           key={type}
                           type="button"
                           className={`filter-tag ${
-                            filters.productType === type ? "is-selected" : ""
+                            pendingFilters.productType === type ? "is-selected" : ""
                           }`}
                           onClick={() =>
-                            setFilters((current) => ({
+                            setPendingFilters((current) => ({
                               ...current,
                               productType: type,
                             }))
@@ -378,7 +329,7 @@ const Hero = ({ onSearch }: HeroProps) => {
                           min="0"
                           step="1"
                           placeholder="Min"
-                          value={filters.priceMin ?? ""}
+                          value={pendingFilters.priceMin ?? ""}
                           onChange={(e) => handlePriceChange("priceMin", e.target.value)}
                         />
                       </div>
@@ -394,11 +345,21 @@ const Hero = ({ onSearch }: HeroProps) => {
                           min="0"
                           step="1"
                           placeholder="Max"
-                          value={filters.priceMax ?? ""}
+                          value={pendingFilters.priceMax ?? ""}
                           onChange={(e) => handlePriceChange("priceMax", e.target.value)}
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div className="filters-actions">
+                    <button
+                      type="button"
+                      className="btn-filters-apply"
+                      onClick={handleApplyFilters}
+                    >
+                      Apply
+                    </button>
                   </div>
                 </div>
               )}
@@ -415,60 +376,7 @@ const Hero = ({ onSearch }: HeroProps) => {
             )}
           </div>
 
-          <div className="discovery-panel">
-            <button
-              type="button"
-              className={`discovery-toggle ${discoveryOpen ? "is-open" : ""}`}
-              onClick={() => setDiscoveryOpen((open) => !open)}
-              aria-expanded={discoveryOpen}
-            >
-              Browse suggestions
-              <HiChevronDown className="discovery-toggle-icon" size={16} aria-hidden />
-            </button>
-
-            {discoveryOpen && (
-              <div className="discovery-sections">
-                <div className="discovery-tabs" role="tablist" aria-label="Suggestion categories">
-                  {discoverySections.map((section) => (
-                    <button
-                      key={section.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={activeDiscoveryId === section.id}
-                      className={`discovery-tab ${
-                        activeDiscoveryId === section.id ? "is-active" : ""
-                      }`}
-                      onClick={() => setActiveDiscoveryId(section.id)}
-                    >
-                      {section.title}
-                    </button>
-                  ))}
-                </div>
-                <div
-                  className="discovery-chips"
-                  role="tabpanel"
-                  aria-label={activeDiscoverySection.title}
-                >
-                  {activeDiscoverySection.chips.map((chip) => (
-                    <button
-                      key={`${activeDiscoverySection.id}-${chip.label}`}
-                      type="button"
-                      className="discovery-chip"
-                      onClick={() => handleChipSearch(chip.query, chip.filters)}
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="hero-buttons">
-            <button className="btn-lucky" onClick={handleLucky}>
-              I'm feeling lucky
-            </button>
-          </div>
+          <ConnectedMarketplacesTicker />
         </div>
       </div>
     </section>

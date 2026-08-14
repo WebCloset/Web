@@ -4,11 +4,14 @@ import Header from './components/Header'
 import Hero from './components/Hero'
 import { DEFAULT_SEARCH_FILTERS, SearchFilters } from './components/Hero'
 import PopularItems from './components/PopularItems'
+import HomeDiscovery from './components/HomeDiscovery'
 import SearchResults from './components/SearchResults'
 import PartnerLogos from './components/PartnerLogos'
 import Footer from './components/Footer'
 import About from './components/About'
 import AdminPage from './components/AdminPage'
+import Profile from './components/Profile'
+import SavedItems from './components/SavedItems'
 import NoResultsModal from './components/NoResultsModal'
 import backgroundImage from './assets/background.png'
 import { searchProducts } from './services/api'
@@ -148,8 +151,9 @@ function Home() {
           />
         ) : (
           <>
-        <PopularItems onPopularItemSearch={handleSearch} />
-        <PartnerLogos />
+            <HomeDiscovery onChipSearch={handleSearch} />
+            <PopularItems onPopularItemSearch={handleSearch} />
+            <PartnerLogos />
           </>
         )}
       </main>
@@ -169,6 +173,8 @@ function App() {
         <Routes>
           <Route path="/home" element={<Home />} />
           <Route path="/about" element={<About />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/saved-items" element={<SavedItems />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/" element={<Home />} />
           <Route path="*" element={<Home />} />

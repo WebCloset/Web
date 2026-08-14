@@ -1,7 +1,7 @@
 @import "../styles/colors.css";
 
 .hero {
-  padding: 80px 40px;
+  padding: 56px 40px 64px;
   text-align: center;
 }
 
@@ -14,8 +14,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 48px;
+  gap: 14px;
+  margin-bottom: 36px;
 }
 
 .hero-eyebrow {
@@ -47,29 +47,17 @@
 
 .hero-title-line {
   display: block;
-  font-size: clamp(30px, 4.8vw, 52px);
-  font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-  color: var(--color-text-primary);
-}
-
-.hero-title-line--secondary {
-  font-size: clamp(22px, 3.4vw, 34px);
-  font-weight: 800;
+  font-size: clamp(26px, 4vw, 44px);
+  font-weight: 400;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--color-text-primary);
 }
 
 .hero-title-accent {
   color: var(--color-primary-dark);
-  font-weight: 800;
+  font-weight: 700;
   white-space: nowrap;
-}
-
-.hero-title-emphasis {
-  color: var(--color-text-primary);
-  font-weight: 800;
 }
 
 .hero-title2 {
@@ -79,7 +67,7 @@
 .search-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 14px;
   align-items: center;
 }
 
@@ -105,15 +93,46 @@
   z-index: 2;
 }
 
+.search-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
 .search-input {
   width: 100%;
-  padding: 25px 280px 25px 60px;
-  font-size: 20px;
+  padding: 22px 280px 22px 60px;
+  font-size: 18px;
   border: 2px solid var(--color-border);
   border-radius: 80px;
   background-color: var(--color-white);
   color: var(--color-text-primary);
   transition: border-color 0.2s;
+}
+
+.search-placeholder-overlay {
+  position: absolute;
+  left: 60px;
+  right: 280px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--color-text-light);
+  text-align: left;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.search-placeholder-overlay.is-visible {
+  opacity: 1;
+  transform: translateY(-50%);
+}
+
+.search-placeholder-overlay.is-fading {
+  opacity: 0;
+  transform: translateY(calc(-50% - 6px));
 }
 
 .search-input:focus {
@@ -304,6 +323,29 @@
   padding-bottom: 10px;
 }
 
+.filters-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
+.btn-filters-apply {
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 100px;
+  background-color: var(--color-primary);
+  color: var(--color-text-white);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-filters-apply:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
 .discovery-panel {
   width: 100%;
   display: flex;
@@ -489,12 +531,14 @@
     white-space: normal;
   }
 
-  .hero-title-line--secondary {
-    line-height: 1.25;
-  }
-
   .search-input {
     padding: 16px 188px 16px 52px;
+    font-size: 14px;
+  }
+
+  .search-placeholder-overlay {
+    left: 52px;
+    right: 188px;
     font-size: 14px;
   }
 

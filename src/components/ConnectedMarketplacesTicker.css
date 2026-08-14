@@ -1,0 +1,200 @@
+@import "../styles/colors.css";
+
+.marketplace-ticker {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 1px solid rgba(127, 133, 96, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  overflow: hidden;
+  gap: 16px;
+}
+
+.marketplace-ticker-label {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.marketplace-ticker-track-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 6%,
+    #000 94%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 6%,
+    #000 94%,
+    transparent 100%
+  );
+}
+
+.marketplace-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 45s linear infinite;
+}
+
+.marketplace-ticker-content {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding-right: 36px;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Marketplace wordmark styles */
+.mp-depop {
+  font-family: "Arial Black", "Helvetica Neue", sans-serif;
+  font-weight: 900;
+  color: #ff2300;
+  text-transform: lowercase;
+  letter-spacing: -0.04em;
+}
+
+.mp-vinted {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  color: #09b1ba;
+  letter-spacing: -0.03em;
+}
+
+.mp-amazon {
+  font-family: "Amazon Ember", "Segoe UI", sans-serif;
+  font-weight: 700;
+  color: #232f3e;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
+}
+
+.mp-amazon::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 1px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid #ff9900;
+  transform: translateY(2px) rotate(-12deg);
+}
+
+.mp-ebay {
+  font-family: "Market Sans", "Segoe UI", sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #0064d2;
+}
+
+.mp-ebay::first-letter {
+  color: #e53238;
+}
+
+.mp-reverb {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  color: #ea5a1b;
+  letter-spacing: -0.02em;
+}
+
+.mp-grailed {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 0.02em;
+}
+
+.mp-poshmark {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 700;
+  color: #7f0353;
+  letter-spacing: -0.01em;
+}
+
+.mp-etsy {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  color: #f1641e;
+  letter-spacing: 0.01em;
+}
+
+.mp-vestiaire {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-weight: 600;
+  color: #111;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mp-asos {
+  font-family: "Arial Black", sans-serif;
+  font-weight: 900;
+  color: #2d2d2d;
+  letter-spacing: 0.06em;
+  font-size: 15px;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .marketplace-ticker {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    min-height: auto;
+  }
+
+  .marketplace-ticker-label {
+    font-size: 10px;
+  }
+
+  .marketplace-ticker-track-wrap {
+    width: 100%;
+  }
+
+  .ticker-item {
+    font-size: 15px;
+  }
+
+  .marketplace-ticker-track {
+    animation-duration: 35s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketplace-ticker-track {
+    animation: none;
+  }
+}
