@@ -13,10 +13,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api-production-d9dd.up.railway.app',
+        // Local FastAPI. To use production instead, set target to:
+        // https://api-production-d9dd.up.railway.app and secure: true
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-        secure: true,
+        secure: false,
       },
     },
   },
