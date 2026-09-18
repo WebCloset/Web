@@ -167,11 +167,13 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
           SEARCH <span className="section-title-accent">RESULTS</span>
           {searchQuery && <span className="search-query-text">for "{searchQuery}"</span>}
         </h2>
-        {filters && (filters.brand || filters.size || filters.condition || filters.priceMin != null || filters.priceMax != null) && (
+        {filters && (
           <div className="active-filters">
-            {filters.brand && <span>Brand: {filters.brand}</span>}
-            {filters.size && <span>Size: {filters.size}</span>}
-            {filters.condition && <span>Condition: {filters.condition}</span>}
+            {filters.sizes.length > 0 && <span>Sizes: {filters.sizes.join(", ")}</span>}
+            {filters.genders.length > 0 && <span>Gender: {filters.genders.join(", ")}</span>}
+            {filters.productType !== "all" && (
+              <span>Type: {filters.productType === "second-hand" ? "Second-hand" : "Retail"}</span>
+            )}
             {filters.priceMin != null && <span>Min price: ${filters.priceMin}</span>}
             {filters.priceMax != null && <span>Max price: ${filters.priceMax}</span>}
           </div>
