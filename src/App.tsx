@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import { DEFAULT_SEARCH_FILTERS, SearchFilters } from './components/Hero'
-import PopularItems from './components/PopularItems'
 import HomeDiscovery from './components/HomeDiscovery'
 import SearchResults from './components/SearchResults'
 import PartnerLogos from './components/PartnerLogos'
@@ -152,7 +151,6 @@ function Home() {
         ) : (
           <>
             <HomeDiscovery onChipSearch={handleSearch} />
-            <PopularItems onPopularItemSearch={handleSearch} />
             <PartnerLogos />
           </>
         )}
