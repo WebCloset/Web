@@ -46,3 +46,22 @@ export interface Product {
   marketplace: string;
   score: number;
 }
+
+/** Persisted favourite from GET/POST /saved-items */
+export interface SavedItem {
+  id: number;
+  email: string;
+  product_id: string;
+  title: string;
+  brand: string | null;
+  condition: string | null;
+  price_cents: number | null;
+  currency: string | null;
+  image_url: string | null;
+  seller_url: string | null;
+  size: string | null;
+  color: string | null;
+  category: string | null;
+  marketplace_code: string;
+  created_at: string | null;
+}

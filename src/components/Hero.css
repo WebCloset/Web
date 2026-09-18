@@ -235,9 +235,11 @@
   top: calc(100% + 10px);
   right: 0;
   width: min(560px, 96vw);
-  z-index: 5;
+  z-index: 100;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
   text-align: left;
+  overflow: hidden;
+  background: var(--color-white);
 }
 
 .filters-group {

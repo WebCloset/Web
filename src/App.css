@@ -6,6 +6,8 @@
 
 .header-hero-wrapper {
   position: relative;
+  /* Keep hero + filter dropdown above product cards in main (badges were painting over filters). */
+  z-index: 20;
 }
 
 .header-hero-wrapper::before {

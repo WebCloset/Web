@@ -56,14 +56,63 @@
   text-align: center;
 }
 
+.saved-container--wide {
+  max-width: 1400px;
+  text-align: left;
+}
+
 .saved-empty,
-.saved-message {
+.saved-message,
+.saved-error {
   color: var(--color-text-secondary);
   font-size: 18px;
   line-height: 1.6;
+  text-align: center;
 }
 
-.saved-message a {
+.saved-error {
+  color: #d32f2f;
+}
+
+.saved-message a,
+.saved-sign-in-link {
   color: var(--color-primary-dark);
   font-weight: 600;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.saved-products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.saved-product-card .product-hover-overlay {
+  /* overlay is always visible on saved page cards */
+  opacity: 1;
+}
+
+@media (max-width: 1200px) {
+  .saved-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .saved-hero {
+    padding: 24px 24px 40px;
+  }
+
+  .saved-main {
+    padding: 40px 24px;
+  }
+
+  .saved-products-grid {
+    grid-template-columns: 1fr;
+  }
 }

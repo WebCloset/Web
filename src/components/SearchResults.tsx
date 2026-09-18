@@ -2,9 +2,14 @@ import { forwardRef, useMemo, useState } from "react";
 import { Product } from "../types/api";
 import "./SearchResults.css";
 import { MdOutlineKeyboardDoubleArrowRight } from "react-icons/md";
+import { HiHeart, HiOutlineHeart } from "react-icons/hi";
 import AdBanner from "./AdBanner";
+import SignInModal from "./SignInModal";
 import { AD_CONFIG } from "../config/ads";
 import { SearchFilters } from "./Hero";
+import { useUserAuth } from "../hooks/useUserAuth";
+import { useSavedItems } from "../hooks/useSavedItems";
+import { productToSavedKey } from "../services/savedItemsApi";
 
 const FULL_ROW_INTERVAL = AD_CONFIG.FULL_ROW_AD_INTERVAL ?? 12;
 const FALLBACK_IMAGE =
@@ -21,42 +26,53 @@ interface SearchResultsProps {
 const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
   ({ products, isLoading, error, searchQuery, filters }, ref) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const { user } = useUserAuth();
+  const { isSaved, toggleSave, togglingKey } = useSavedItems(user?.email);
 
   const handleProductClick = (product: Product, event?: React.MouseEvent) => {
-    // Prevent event bubbling if needed
     if (event) {
       event.stopPropagation();
     }
     setSelectedProduct(product);
   };
 
-  const formatPrice = (price: number, currency: string) => {
-    // Clean currency string (remove extra spaces)
-    const cleanCurrency = currency.trim();
-    
-    // Handle common currency symbols
-    if (cleanCurrency.includes('₹') || cleanCurrency === 'INR') {
-      return `₹${price.toLocaleString('en-IN')}`;
-    }
-    
-    // Try to format with Intl.NumberFormat, fallback to simple format
+  const handleToggleSave = async (product: Product, event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
     try {
-      // Extract currency code (first 3 letters if available)
-      const currencyCode = cleanCurrency.length >= 3 
-        ? cleanCurrency.substring(0, 3).toUpperCase()
-        : cleanCurrency.toUpperCase();
-      
+      const result = await toggleSave(product);
+      if (result === "needs_auth") {
+        setSignInOpen(true);
+      }
+    } catch {
+      /* error surfaced via hook; keep UI quiet */
+    }
+  };
+
+  const formatPrice = (price: number, currency: string) => {
+    const cleanCurrency = currency.trim();
+
+    if (cleanCurrency.includes("₹") || cleanCurrency === "INR") {
+      return `₹${price.toLocaleString("en-IN")}`;
+    }
+
+    try {
+      const currencyCode =
+        cleanCurrency.length >= 3
+          ? cleanCurrency.substring(0, 3).toUpperCase()
+          : cleanCurrency.toUpperCase();
+
       return new Intl.NumberFormat("en-US", {
         style: "currency",
-        currency: currencyCode === 'USD' ? 'USD' : currencyCode,
+        currency: currencyCode === "USD" ? "USD" : currencyCode,
       }).format(price);
-    } catch (e) {
-      // Fallback: just show currency symbol and price
+    } catch {
       return `${cleanCurrency}${price.toLocaleString()}`;
     }
   };
 
-  type GridItem = Product | { type: 'ad'; id: string; index: number; position: 'fullrow' };
+  type GridItem = Product | { type: "ad"; id: string; index: number; position: "fullrow" };
 
   const productsWithAds = useMemo(() => {
     if (!AD_CONFIG.ENABLED) {
@@ -76,16 +92,33 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
       if (isFullRowSlot) {
         fullrowCount += 1;
         items.push({
-          type: 'ad',
+          type: "ad",
           id: `ad-fullrow-${fullrowCount}`,
           index: fullrowCount,
-          position: 'fullrow',
+          position: "fullrow",
         });
       }
     });
 
     return items;
   }, [products]);
+
+  const renderSaveButton = (product: Product, variant: "card" | "detail") => {
+    const saved = isSaved(product);
+    const busy = togglingKey === productToSavedKey(product);
+    return (
+      <button
+        type="button"
+        className={`product-save-button product-save-button--${variant}${saved ? " is-saved" : ""}`}
+        aria-label={saved ? "Remove from saved items" : "Save item"}
+        aria-pressed={saved}
+        disabled={busy}
+        onClick={(e) => void handleToggleSave(product, e)}
+      >
+        {saved ? <HiHeart size={variant === "card" ? 18 : 22} /> : <HiOutlineHeart size={variant === "card" ? 18 : 22} />}
+      </button>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -119,12 +152,9 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
         <div className="search-results-container">
           <h2 className="section-title">
             SEARCH <span className="section-title-accent">RESULTS</span>
+            {searchQuery && <span className="search-query-text">for "{searchQuery}"</span>}
           </h2>
-          {searchQuery && (
-            <div className="no-results-message">
-              No results found for "{searchQuery}". Try a different search query.
-            </div>
-          )}
+          <div className="no-results-message">No products found. Try a different search.</div>
         </div>
       </section>
     );
@@ -135,35 +165,31 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
       <div className="search-results-container">
         <h2 className="section-title">
           SEARCH <span className="section-title-accent">RESULTS</span>
-          {searchQuery && (
-            <span className="search-query-text"> for "{searchQuery}"</span>
-          )}
+          {searchQuery && <span className="search-query-text">for "{searchQuery}"</span>}
         </h2>
-        {filters && (
+        {filters && (filters.brand || filters.size || filters.condition || filters.priceMin != null || filters.priceMax != null) && (
           <div className="active-filters">
-            {filters.sizes.length > 0 && <span>Sizes: {filters.sizes.join(", ")}</span>}
-            {filters.genders.length > 0 && <span>Gender: {filters.genders.join(", ")}</span>}
-            {filters.productType !== "all" && (
-              <span>Type: {filters.productType === "second-hand" ? "Second-hand" : "Retail"}</span>
-            )}
+            {filters.brand && <span>Brand: {filters.brand}</span>}
+            {filters.size && <span>Size: {filters.size}</span>}
+            {filters.condition && <span>Condition: {filters.condition}</span>}
             {filters.priceMin != null && <span>Min price: ${filters.priceMin}</span>}
             {filters.priceMax != null && <span>Max price: ${filters.priceMax}</span>}
           </div>
         )}
         <div className="products-grid">
-          {productsWithAds.map((item, ) => {
-            if ('type' in item && item.type === 'ad') {
+          {productsWithAds.map((item) => {
+            if ("type" in item && item.type === "ad") {
               return (
                 <AdBanner
                   key={item.id}
                   adSlot={`search-results-${item.position}-${item.index}`}
                   adId={item.id}
                   position={item.position}
-                  fullRow={item.position === 'fullrow'}
+                  fullRow={item.position === "fullrow"}
                 />
               );
             }
-            
+
             const product = item as Product;
             return (
               <div
@@ -182,6 +208,7 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
                       image.src = FALLBACK_IMAGE;
                     }}
                   />
+                  {renderSaveButton(product, "card")}
                   <div className="product-badge">{product.marketplace}</div>
                 </div>
                 <div className="product-hover-overlay">
@@ -203,7 +230,7 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
                       <span className="product-color-text">Color: {product.color}</span>
                     )}
                   </div>
-                  <button 
+                  <button
                     className="product-hover-button"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -251,7 +278,10 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
                 />
               </div>
               <div className="product-preview-details">
-                <h3>{selectedProduct.title}</h3>
+                <div className="product-preview-heading">
+                  <h3>{selectedProduct.title}</h3>
+                  {renderSaveButton(selectedProduct, "detail")}
+                </div>
                 <p className="product-preview-price">
                   {formatPrice(selectedProduct.price, selectedProduct.currency)}
                 </p>
@@ -290,6 +320,7 @@ const SearchResults = forwardRef<HTMLElement, SearchResultsProps>(
           </div>
         </div>
       )}
+      <SignInModal isOpen={signInOpen} onClose={() => setSignInOpen(false)} />
     </section>
   );
 });

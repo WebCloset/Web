@@ -111,6 +111,70 @@
   z-index: 2;
 }
 
+.product-save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.product-save-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.product-save-button--card {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-gray);
+  z-index: 3;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.product-save-button--card:hover {
+  background: var(--color-white);
+  transform: scale(1.06);
+}
+
+.product-save-button--card.is-saved,
+.product-save-button--detail.is-saved {
+  color: #c45c5c;
+}
+
+.product-save-button--detail {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-gray-lightest);
+  color: var(--color-gray);
+}
+
+.product-save-button--detail:hover {
+  background: var(--color-gray-lighter);
+  transform: scale(1.05);
+}
+
+.product-preview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.product-preview-heading h3 {
+  margin: 0;
+  flex: 1;
+}
+
 .product-hover-overlay {
   position: absolute;
   bottom: 0;
@@ -277,7 +341,7 @@
 }
 
 .product-preview-details h3 {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 30px;
 }
 

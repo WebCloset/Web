@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import "./HomeDiscovery.css";
 import { DEFAULT_SEARCH_FILTERS, SearchFilters } from "./Hero";
 
@@ -72,6 +73,28 @@ interface HomeDiscoveryProps {
 }
 
 const HomeDiscovery = ({ onChipSearch }: HomeDiscoveryProps) => {
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const activeSection =
+    DISCOVERY_SECTIONS.find((section) => section.id === activeSectionId) ?? null;
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) {
+        setIsHeaderMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
+  }, []);
+
+  const handleSelectHeader = (section: DiscoverySection) => {
+    setActiveSectionId(section.id);
+    setIsHeaderMenuOpen(false);
+  };
+
   const handleChipClick = (chip: DiscoveryChip) => {
     const mergedFilters: SearchFilters = {
       ...DEFAULT_SEARCH_FILTERS,
@@ -82,26 +105,83 @@ const HomeDiscovery = ({ onChipSearch }: HomeDiscoveryProps) => {
 
   return (
     <section className="home-discovery" aria-label="Discover fashion">
-      <div className="home-discovery-container">
-        {DISCOVERY_SECTIONS.map((section) => (
-          <div key={section.id} className="discovery-row">
-            <h2 className="discovery-row-title">{section.title}</h2>
-            <div className="discovery-row-scroll">
-              <div className="discovery-row-chips">
-                {section.chips.map((chip) => (
-                  <button
-                    key={`${section.id}-${chip.label}`}
-                    type="button"
-                    className="discovery-row-chip"
-                    onClick={() => handleChipClick(chip)}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
+      <div className="home-discovery-container home-discovery-centered">
+        <div className="discovery-selectors" aria-label="Discovery categories">
+          <div
+            ref={dropdownRef}
+            className={`discovery-dropdown${isHeaderMenuOpen ? " is-open" : ""}${
+              activeSection ? " has-selection" : ""
+            }`}
+          >
+            <button
+              type="button"
+              className="discovery-dropdown-trigger"
+              aria-expanded={isHeaderMenuOpen}
+              aria-controls="discovery-header-menu"
+              onClick={() => setIsHeaderMenuOpen((open) => !open)}
+            >
+              <span className="discovery-dropdown-title">
+                {activeSection ? activeSection.title : "Browse by"}
+              </span>
+              <span className="discovery-dropdown-chevron" aria-hidden="true" />
+            </button>
+
+            {isHeaderMenuOpen && (
+              <ul
+                id="discovery-header-menu"
+                className="discovery-dropdown-menu"
+                role="listbox"
+                aria-label="Discovery categories"
+              >
+                {DISCOVERY_SECTIONS.map((section) => {
+                  const isActive = section.id === activeSectionId;
+                  return (
+                    <li key={section.id} role="option" aria-selected={isActive}>
+                      <button
+                        type="button"
+                        className={`discovery-dropdown-option${isActive ? " is-active" : ""}`}
+                        onClick={() => handleSelectHeader(section)}
+                      >
+                        {section.title}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <div className="discovery-options-panel">
+          {!activeSection && (
+            <div className="discovery-options-empty">
+              <h2 className="discovery-options-heading">Choose a category</h2>
+              <p className="discovery-options-copy">
+                Select a header from the dropdown to see its options.
+              </p>
+            </div>
+          )}
+
+          {activeSection && (
+            <div className="discovery-row">
+              <h2 className="discovery-row-title">{activeSection.title}</h2>
+              <div className="discovery-row-scroll">
+                <div className="discovery-row-chips">
+                  {activeSection.chips.map((chip) => (
+                    <button
+                      key={`${activeSection.id}-${chip.label}`}
+                      type="button"
+                      className="discovery-row-chip"
+                      onClick={() => handleChipClick(chip)}
+                    >
+                      {chip.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
     </section>
   );
